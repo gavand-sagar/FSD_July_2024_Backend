@@ -3,7 +3,7 @@ import { Router } from "express"
 export const basicRoutes = Router(); 
 
 // endpoint / api
-basicRoutes.get("/", (req, res) => {
+basicRoutes.get("/", (req, res) => { 
     res.send("<h1>Hi this is Sagar</h1>")
 })
 

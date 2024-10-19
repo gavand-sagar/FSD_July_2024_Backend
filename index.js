@@ -8,6 +8,7 @@ import { userApis } from './users/users-apis.js';
 import { commentApis } from './comments/comments-apis.js';
 
 const app = express();
+app.use(express.json())
 
 app.use("/", counterRoutes)
 app.use("/", objRoutes)

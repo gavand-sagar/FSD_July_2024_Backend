@@ -2,11 +2,10 @@ import { Router } from "express"
 
 export const userApis = Router();
 
-userApis.get("/get-user-profile", (req, res) => {
-    res.json({
-        username: "sagar",
-        email: "sagar@sagar.cc",
-    })
+const usersArray = []
+
+userApis.get("/get-users-list", (req, res) => {
+    res.json(usersArray)
 })
 
 
@@ -22,4 +21,10 @@ userApis.get("/get-user-email", (req, res) => {
         email: "Sagar@asddf.cc"
     })
 })
+
+
+userApis.post("/signup-user", (req, res) => {
+    res.json(req.body)
+})
+
 

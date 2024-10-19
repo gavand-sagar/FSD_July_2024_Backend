@@ -27,7 +27,7 @@ objRoutes.get("/change-count2", (req, res) => {
 });
 
 // changes count3
-app.get("/change-count3", (req, res) => {
+objRoutes.get("/change-count3", (req, res) => {
     obj.count3 = obj.count3 + 1
     res.json(obj)
 });
