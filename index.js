@@ -5,6 +5,7 @@ import { arrayRoutes } from './array/array-apis.js';
 import { simpleMathRoutes } from './simple-math/simple-apis.js';
 import { basicRoutes } from './basic/basic-apis.js';
 import { userApis } from './users/users-apis.js';
+import { commentApis } from './comments/comments-apis.js';
 
 const app = express();
 
@@ -14,6 +15,6 @@ app.use("/", arrayRoutes)
 app.use("/", simpleMathRoutes)
 app.use("/", basicRoutes)
 app.use("/", userApis);
-
+app.use("/", commentApis)
 
 app.listen(3001)

@@ -15,3 +15,11 @@ userApis.get("/check-username-exists", (req, res) => {
         exists: false
     })
 })
+
+
+userApis.get("/get-user-email", (req, res) => {
+    res.json({
+        email: "Sagar@asddf.cc"
+    })
+})
+
