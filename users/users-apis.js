@@ -26,6 +26,14 @@ userApis.get("/get-user-email", (req, res) => {
 userApis.post("/signup-user", (req, res) => {
     
     const usersArray = JSON.parse(fs.readFileSync("./data.json"))
+    
+    if(usersArray.find(x=>x.username.toLowerCase() == req.body.username.toLowerCase())){
+        res.json({
+            message:"User already Exists"
+        })
+        return;
+    }
+
     usersArray.push(req.body);
     fs.writeFileSync("./data.json",  JSON.stringify(usersArray) )
 
