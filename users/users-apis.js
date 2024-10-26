@@ -1,45 +1,89 @@
 import { Router } from "express"
-import fs from 'fs'
+import { MongoClient, ObjectId } from "mongodb";
 export const userApis = Router();
 
 
-userApis.get("/get-users-list", (req, res) => {
-    const usersArray = JSON.parse(fs.readFileSync("./data.json"))
-    res.json(usersArray)
+userApis.get("/get-users-list", async (req, res) => {
+    // we want to get the list from the database
+    const client = new MongoClient("mongodb+srv://admin:123@cluster0.dnyhi.mongodb.net/")
+    const connection = await client.connect();
+    const db = connection.db("icc");
+
+    const data = await db.collection("users").find({ username: req.query.username, password: req.query.password }).toArray();
+    res.json(data);
 })
 
+userApis.get("/get-user/:id", async (req, res) => {
+    // we want to get the list from the database
+    const client = new MongoClient("mongodb+srv://admin:123@cluster0.dnyhi.mongodb.net/")
+    const connection = await client.connect();
+    const db = connection.db("icc");
 
-userApis.get("/check-username-exists", (req, res) => {
-    res.json({
-        exists: false
-    })
+    const [data] = await db.collection("users").find({ _id: new ObjectId(req.params.id) }).toArray();
+    res.json(data);
 })
 
+userApis.patch("/update-user/:id", async (req, res) => {
+    // we want to get the list from the database
+    const client = new MongoClient("mongodb+srv://admin:123@cluster0.dnyhi.mongodb.net/")
+    const connection = await client.connect();
+    const db = connection.db("icc");
 
-userApis.get("/get-user-email", (req, res) => {
-    res.json({
-        email: "Sagar@asddf.cc"
-    })
-})
-
-
-userApis.post("/signup-user", (req, res) => {
-    
-    const usersArray = JSON.parse(fs.readFileSync("./data.json"))
-    
-    if(usersArray.find(x=>x.username.toLowerCase() == req.body.username.toLowerCase())){
-        res.json({
-            message:"User already Exists"
-        })
-        return;
+    const matcher = { _id: new ObjectId(req.params.id) };
+    const updateQuery = {
+        $set: req.body
     }
 
-    usersArray.push(req.body);
-    fs.writeFileSync("./data.json",  JSON.stringify(usersArray) )
+    const dbResponse = await db.collection("users").updateOne(matcher, updateQuery)
+    res.json(dbResponse);
+})
 
-    res.json({
-        message:"Created"
-    })
+userApis.delete("/delete-user/:id", async (req, res) => {
+    // we want to get the list from the database
+    const client = new MongoClient("mongodb+srv://admin:123@cluster0.dnyhi.mongodb.net/")
+    const connection = await client.connect();
+    const db = connection.db("icc");
+
+    const data = await db.collection("users").deleteMany({ _id: new ObjectId(req.params.id) });
+    res.json(data);
+})
+
+userApis.post("/signup-user", async (req, res) => {
+    const client = new MongoClient("mongodb+srv://admin:123@cluster0.dnyhi.mongodb.net/")
+    const connection = await client.connect();
+    const db = connection.db("icc");
+
+
+    // check if user already exists
+    const data = await db.collection("users")
+        .find({
+            username: {
+                $regex: req.body.username,
+                $options: 'i' // case insensitive search ie. "sagar" == "Sagar"
+            }
+        }).toArray();
+
+    if (data.length > 0) { // username present
+        res.status(400).json({ message: "Username is already taken." })
+    } else {
+        const dbResponse = await db.collection("users").insertOne(req.body)
+        res.json({ message: "Created.", dbResponse })
+    }
 })
 
 
+userApis.get("/get-all-products", async (req, res) => {
+    // we want to get the list from the database
+    const client = new MongoClient("mongodb+srv://admin:123@cluster0.dnyhi.mongodb.net/")
+    const connection = await client.connect();
+    const db = connection.db("icc");
+
+    if (req.query.priceGreaterThan) {
+        const data = await db.collection("products").find({ price: { $gt: Number(req.query.priceGreaterThan) } }).toArray();
+        res.json(data);
+    } else {
+        const data = await db.collection("products").find({}).toArray();
+        res.json(data);
+    }
+
+})
