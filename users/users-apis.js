@@ -53,6 +53,25 @@ userApis.post("/signup-user", async (req, res) => {
     const connection = await client.connect();
     const db = connection.db("icc");
 
+    if(req.body.username == null || req.body.username == ""){
+        res.status(400).json({ message: "Username should not be null."});
+        return;
+    }
+    if(req.body.password == null || req.body.password == ""){
+        res.status(400).json({ message: "Password should not be null."});
+        return;
+    }
+
+    if(req.body.password.length < 8){
+        res.status(400).json({ message: "Password should be at least 8 letters long."});
+        return;
+    }
+
+    if(req.body.password.length > 100){
+        res.status(400).json({ message: "Password should not be at more than 100 letters long."});
+        return;
+    }
+
 
     // check if user already exists
     const data = await db.collection("users")
@@ -71,19 +90,3 @@ userApis.post("/signup-user", async (req, res) => {
     }
 })
 
-
-userApis.get("/get-all-products", async (req, res) => {
-    // we want to get the list from the database
-    const client = new MongoClient("mongodb+srv://admin:123@cluster0.dnyhi.mongodb.net/")
-    const connection = await client.connect();
-    const db = connection.db("icc");
-
-    if (req.query.priceGreaterThan) {
-        const data = await db.collection("products").find({ price: { $gt: Number(req.query.priceGreaterThan) } }).toArray();
-        res.json(data);
-    } else {
-        const data = await db.collection("products").find({}).toArray();
-        res.json(data);
-    }
-
-})
