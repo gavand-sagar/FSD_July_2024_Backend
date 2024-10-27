@@ -1,4 +1,5 @@
 import { Router } from "express"
+import { body, validationResult } from "express-validator";
 import { MongoClient, ObjectId } from "mongodb";
 export const userApis = Router();
 
@@ -48,45 +49,59 @@ userApis.delete("/delete-user/:id", async (req, res) => {
     res.json(data);
 })
 
-userApis.post("/signup-user", async (req, res) => {
-    const client = new MongoClient("mongodb+srv://admin:123@cluster0.dnyhi.mongodb.net/")
-    const connection = await client.connect();
-    const db = connection.db("icc");
+userApis.post("/signup-user",
+    body("username")
+        .isString()
+        .withMessage("Should be string")
+        .notEmpty()
+        .withMessage("Required")
+        .isLength({
+            min: 5, max: 50
+        })
+        .withMessage("Username should be 5-50 letters long")
+    ,
+    body("password")
+        .isString()
+        .withMessage("Should be string")
+        .notEmpty()
+        .withMessage("Required")
+        .isLength({
+            min: 8, max: 100
+        })
+        .withMessage("password should be 8-100 letters long"),
+    body("email")
+        .isString()
+        .withMessage("Should be string")
+        .notEmpty()
+        .withMessage("Required")
+        .isEmail()
+        .withMessage("Email should be in proper format")
+    , async (req, res) => {
 
-    if(req.body.username == null || req.body.username == ""){
-        res.status(400).json({ message: "Username should not be null."});
-        return;
-    }
-    if(req.body.password == null || req.body.password == ""){
-        res.status(400).json({ message: "Password should not be null."});
-        return;
-    }
+        let errors = validationResult(req);
 
-    if(req.body.password.length < 8){
-        res.status(400).json({ message: "Password should be at least 8 letters long."});
-        return;
-    }
+        if (errors.isEmpty()) {
+            const client = new MongoClient("mongodb+srv://admin:123@cluster0.dnyhi.mongodb.net/")
+            const connection = await client.connect();
+            const db = connection.db("icc");
+            // check if user already exists
+            const data = await db.collection("users")
+                .find({
+                    username: {
+                        $regex: req.body.username,
+                        $options: 'i' // case insensitive search ie. "sagar" == "Sagar"
+                    }
+                }).toArray();
 
-    if(req.body.password.length > 100){
-        res.status(400).json({ message: "Password should not be at more than 100 letters long."});
-        return;
-    }
-
-
-    // check if user already exists
-    const data = await db.collection("users")
-        .find({
-            username: {
-                $regex: req.body.username,
-                $options: 'i' // case insensitive search ie. "sagar" == "Sagar"
+            if (data.length > 0) { // username present
+                res.status(400).json({ message: "Username is already taken." })
+            } else {
+                const dbResponse = await db.collection("users").insertOne(req.body)
+                res.json({ message: "Created.", dbResponse })
             }
-        }).toArray();
+        }else{
+            res.status(400).json({ errors: errors.array() })
+        }
 
-    if (data.length > 0) { // username present
-        res.status(400).json({ message: "Username is already taken." })
-    } else {
-        const dbResponse = await db.collection("users").insertOne(req.body)
-        res.json({ message: "Created.", dbResponse })
-    }
-})
+    })
 
