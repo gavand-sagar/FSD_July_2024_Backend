@@ -1,7 +1,7 @@
 import { Router } from "express"
 import { body, validationResult } from "express-validator";
 import { MongoClient, ObjectId } from "mongodb";
-import { DbConnectionString } from "../constant";
+import { DbConnectionString } from "../constant.js";
 export const categoriesApis = Router();
 
 
