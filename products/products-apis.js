@@ -1,12 +1,13 @@
 import { Router } from "express"
 import { body, validationResult } from "express-validator";
 import { MongoClient, ObjectId } from "mongodb";
+import { DbConnectionString } from "../constant";
 export const productApis = Router();
 
 
 productApis.get("/get-all-products", async (req, res) => {
     // we want to get the list from the database
-    const client = new MongoClient("mongodb+srv://admin:123@cluster0.dnyhi.mongodb.net/")
+    const client = new MongoClient(DbConnectionString)
     const connection = await client.connect();
     const db = connection.db("icc");
 
@@ -22,7 +23,7 @@ productApis.get("/get-all-products", async (req, res) => {
 
 // Try to create following apis (you can refer user's apis)
 productApis.delete("/delete-product/:id", async (req, res) => {
-    const client = new MongoClient("mongodb+srv://admin:123@cluster0.dnyhi.mongodb.net/")
+    const client = new MongoClient(DbConnectionString)
     const connection = await client.connect();
     const db = connection.db("icc");
 
@@ -32,7 +33,7 @@ productApis.delete("/delete-product/:id", async (req, res) => {
 
 
 productApis.patch("/update-product/:id", async (req, res) => {
-    const client = new MongoClient("mongodb+srv://admin:123@cluster0.dnyhi.mongodb.net/")
+    const client = new MongoClient(DbConnectionString)
     const connection = await client.connect();
     const db = connection.db("icc");
 
@@ -77,7 +78,7 @@ productApis.post("/insert-product",
         let errors = validationResult(req)
 
         if (errors.isEmpty()) {
-            const client = new MongoClient("mongodb+srv://admin:123@cluster0.dnyhi.mongodb.net/")
+            const client = new MongoClient(DbConnectionString)
             const connection = await client.connect();
             const db = connection.db("icc");
 

@@ -1,11 +1,12 @@
 import { Router } from "express"
 import { body, validationResult } from "express-validator";
 import { MongoClient, ObjectId } from "mongodb";
+import { DbConnectionString } from "../constant";
 export const categoriesApis = Router();
 
 
 categoriesApis.get("/get-all-categories", async (req, res) => {
-    const client = new MongoClient("mongodb+srv://admin:123@cluster0.dnyhi.mongodb.net/")
+    const client = new MongoClient(DbConnectionString)
     const connection = await client.connect();
     const db = connection.db("icc");
 
@@ -25,7 +26,7 @@ categoriesApis.post("/insert-category",
     async (req, res) => {
         const errors = validationResult(req);
         if (errors.isEmpty()) { // if there are no error in the data (data is in proper format)
-            const client = new MongoClient("mongodb+srv://admin:123@cluster0.dnyhi.mongodb.net/")
+            const client = new MongoClient(DbConnectionString)
             const connection = await client.connect();
             const db = connection.db("icc");
             const dbResponse = await db.collection("categories").insertOne(req.body)

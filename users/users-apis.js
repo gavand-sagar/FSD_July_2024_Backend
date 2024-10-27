@@ -1,12 +1,13 @@
 import { Router } from "express"
 import { body, validationResult } from "express-validator";
 import { MongoClient, ObjectId } from "mongodb";
+import { DbConnectionString } from "../constant";
 export const userApis = Router();
 
 
 userApis.get("/get-users-list", async (req, res) => {
     // we want to get the list from the database
-    const client = new MongoClient("mongodb+srv://admin:123@cluster0.dnyhi.mongodb.net/")
+    const client = new MongoClient(DbConnectionString)
     const connection = await client.connect();
     const db = connection.db("icc");
 
@@ -16,7 +17,7 @@ userApis.get("/get-users-list", async (req, res) => {
 
 userApis.get("/get-user/:id", async (req, res) => {
     // we want to get the list from the database
-    const client = new MongoClient("mongodb+srv://admin:123@cluster0.dnyhi.mongodb.net/")
+    const client = new MongoClient(DbConnectionString)
     const connection = await client.connect();
     const db = connection.db("icc");
 
@@ -26,7 +27,7 @@ userApis.get("/get-user/:id", async (req, res) => {
 
 userApis.patch("/update-user/:id", async (req, res) => {
     // we want to get the list from the database
-    const client = new MongoClient("mongodb+srv://admin:123@cluster0.dnyhi.mongodb.net/")
+    const client = new MongoClient(DbConnectionString)
     const connection = await client.connect();
     const db = connection.db("icc");
 
@@ -41,7 +42,7 @@ userApis.patch("/update-user/:id", async (req, res) => {
 
 userApis.delete("/delete-user/:id", async (req, res) => {
     // we want to get the list from the database
-    const client = new MongoClient("mongodb+srv://admin:123@cluster0.dnyhi.mongodb.net/")
+    const client = new MongoClient(DbConnectionString)
     const connection = await client.connect();
     const db = connection.db("icc");
 
@@ -81,7 +82,7 @@ userApis.post("/signup-user",
         let errors = validationResult(req);
 
         if (errors.isEmpty()) {
-            const client = new MongoClient("mongodb+srv://admin:123@cluster0.dnyhi.mongodb.net/")
+            const client = new MongoClient(DbConnectionString)
             const connection = await client.connect();
             const db = connection.db("icc");
             // check if user already exists
