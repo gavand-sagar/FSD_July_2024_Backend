@@ -1,4 +1,5 @@
 import { Router } from "express"
+import { body, validationResult } from "express-validator";
 import { MongoClient, ObjectId } from "mongodb";
 export const productApis = Router();
 
@@ -45,11 +46,44 @@ productApis.patch("/update-product/:id", async (req, res) => {
 })
 
 
-productApis.post("/insert-product", async (req, res) => {
-    const client = new MongoClient("mongodb+srv://admin:123@cluster0.dnyhi.mongodb.net/")
-    const connection = await client.connect();
-    const db = connection.db("icc");
+productApis.post("/insert-product",
+    body("title")
+        .isString().withMessage("should be string")
+        .notEmpty().withMessage("Required")
+        .isLength({ min: 5, max: 100 }).withMessage("length 5-100")
+    ,
+    body("category")
+        .isString().withMessage("should be string")
+        .notEmpty().withMessage("Required")
+        .isLength({ min: 5, max: 100 }).withMessage("length 5-100")
+    ,
+    body("price")
+        .isNumeric().withMessage("should be number")
+        .notEmpty().withMessage("Required")
+        .isFloat({ min: 0 }).withMessage("can not be negetive")
+    ,
+    body("rating")
+        .isNumeric().withMessage("should be number")
+        .notEmpty().withMessage("Required")
+        .isFloat({ min: 0, max: 5 }).withMessage("must be between 0-5")
+    , body("stock")
+        .isNumeric().withMessage("should be number")
+        .notEmpty().withMessage("Required")
+        .isInt({ min: 0 }).withMessage("can not be negetive")
 
-    const dbResponse = await db.collection("products").insertOne(req.body)
-    res.json({ message: "Created.", dbResponse })
-})
+    ,
+    async (req, res) => {
+
+        let errors = validationResult(req)
+
+        if (errors.isEmpty()) {
+            const client = new MongoClient("mongodb+srv://admin:123@cluster0.dnyhi.mongodb.net/")
+            const connection = await client.connect();
+            const db = connection.db("icc");
+
+            const dbResponse = await db.collection("products").insertOne(req.body)
+            res.json({ message: "Created.", dbResponse })
+        } else {
+            res.status(400).json(errors.array())
+        }
+    })
