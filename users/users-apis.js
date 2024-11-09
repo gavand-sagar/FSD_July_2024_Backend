@@ -1,7 +1,8 @@
 import { Router } from "express"
 import { body, validationResult } from "express-validator";
 import { MongoClient, ObjectId } from "mongodb";
-import { DbConnectionString } from "../constant.js";
+import { DbConnectionString, SECRETE_KEY } from "../constant.js";
+import jwt from 'jsonwebtoken'
 export const userApis = Router();
 
 
@@ -11,8 +12,20 @@ userApis.get("/get-users-list", async (req, res) => {
     const connection = await client.connect();
     const db = connection.db("icc");
 
-    const data = await db.collection("users").find({ username: req.query.username, password: req.query.password }).toArray();
-    res.json(data);
+    if (req.query.username && req.query.password) {
+        const data = await db.collection("users")
+            .find({ username: req.query.username, password: req.query.password }).toArray();
+        res.json(data);
+    } else {
+        const data = await db.collection("users")
+            .find({}, {
+                projection: {
+                    password: false,
+                }
+            }).toArray();
+        res.json(data);
+    }
+
 })
 
 userApis.get("/get-user/:id", async (req, res) => {
@@ -100,9 +113,36 @@ userApis.post("/signup-user",
                 const dbResponse = await db.collection("users").insertOne(req.body)
                 res.json({ message: "Created.", dbResponse })
             }
-        }else{
+        } else {
             res.status(400).json({ errors: errors.array() })
         }
 
     })
 
+
+
+userApis.get('/generate-token', async (req, res) => {
+    const client = new MongoClient(DbConnectionString)
+    const connection = await client.connect();
+    const db = connection.db("icc");
+
+    const user = await db.collection("users")
+        .findOne({ username: req.headers.myusername, password: req.headers.mypassword });
+    //if user present in the db then read categories from db and send otherwise send error response
+    if (user) {
+        const token = jwt.sign({
+            username: user.username
+        },
+            SECRETE_KEY,
+            {
+                expiresIn: "2h"
+            }
+        )
+        //generate the token and send it to client
+        res.json({ token })
+    } else {
+        res.status(401).json({ message: "Un authorized." })
+        return;
+    }
+
+})

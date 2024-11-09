@@ -6,12 +6,20 @@ export const categoriesApis = Router();
 
 
 categoriesApis.get("/get-all-categories", async (req, res) => {
+
+
+
+
     const client = new MongoClient(DbConnectionString)
     const connection = await client.connect();
     const db = connection.db("icc");
 
     const data = await db.collection("categories").find({}).toArray();
     res.json(data)
+
+
+   
+
 })
 
 
@@ -25,10 +33,17 @@ categoriesApis.post("/insert-category",
         .withMessage("Required"),
     async (req, res) => {
         const errors = validationResult(req);
+
+
+
+        
+
+
         if (errors.isEmpty()) { // if there are no error in the data (data is in proper format)
             const client = new MongoClient(DbConnectionString)
             const connection = await client.connect();
             const db = connection.db("icc");
+
             const dbResponse = await db.collection("categories").insertOne(req.body)
             res.json({ message: "Created.", dbResponse })
         } else {

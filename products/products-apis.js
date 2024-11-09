@@ -10,7 +10,7 @@ productApis.get("/get-all-products", async (req, res) => {
     const client = new MongoClient(DbConnectionString)
     const connection = await client.connect();
     const db = connection.db("icc");
-
+   
     if (req.query.priceGreaterThan) {
         const data = await db.collection("products").find({ price: { $gt: Number(req.query.priceGreaterThan) } }).toArray();
         res.json(data);
