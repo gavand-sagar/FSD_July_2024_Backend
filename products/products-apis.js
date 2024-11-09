@@ -1,16 +1,14 @@
 import { Router } from "express"
 import { body, validationResult } from "express-validator";
-import { MongoClient, ObjectId } from "mongodb";
-import { DbConnectionString } from "../constant.js";
+import { ObjectId } from "mongodb";
+import { getDb } from "../db/db-utils.js";
 export const productApis = Router();
 
 
 productApis.get("/get-all-products", async (req, res) => {
     // we want to get the list from the database
-    const client = new MongoClient(DbConnectionString)
-    const connection = await client.connect();
-    const db = connection.db("icc");
-   
+
+    const db = await getDb();
     if (req.query.priceGreaterThan) {
         const data = await db.collection("products").find({ price: { $gt: Number(req.query.priceGreaterThan) } }).toArray();
         res.json(data);
@@ -23,19 +21,14 @@ productApis.get("/get-all-products", async (req, res) => {
 
 // Try to create following apis (you can refer user's apis)
 productApis.delete("/delete-product/:id", async (req, res) => {
-    const client = new MongoClient(DbConnectionString)
-    const connection = await client.connect();
-    const db = connection.db("icc");
-
+    const db = await getDb();
     const data = await db.collection("products").deleteMany({ _id: new ObjectId(req.params.id) });
     res.json(data);
 })
 
 
 productApis.patch("/update-product/:id", async (req, res) => {
-    const client = new MongoClient(DbConnectionString)
-    const connection = await client.connect();
-    const db = connection.db("icc");
+    const db = await getDb();
 
     const matcher = { _id: new ObjectId(req.params.id) };
     const updateQuery = {
@@ -78,10 +71,7 @@ productApis.post("/insert-product",
         let errors = validationResult(req)
 
         if (errors.isEmpty()) {
-            const client = new MongoClient(DbConnectionString)
-            const connection = await client.connect();
-            const db = connection.db("icc");
-
+            const db = await getDb();
             const dbResponse = await db.collection("products").insertOne(req.body)
             res.json({ message: "Created.", dbResponse })
         } else {

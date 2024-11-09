@@ -1,17 +1,14 @@
 import { Router } from "express"
 import { body, validationResult } from "express-validator";
-import { MongoClient, ObjectId } from "mongodb";
-import { DbConnectionString, SECRETE_KEY } from "../constant.js";
+import { ObjectId } from "mongodb";
 import jwt from 'jsonwebtoken'
+import { getDb } from "../db/db-utils.js";
 export const userApis = Router();
 
 
 userApis.get("/get-users-list", async (req, res) => {
     // we want to get the list from the database
-    const client = new MongoClient(DbConnectionString)
-    const connection = await client.connect();
-    const db = connection.db("icc");
-
+    const db = await getDb();
     if (req.query.username && req.query.password) {
         const data = await db.collection("users")
             .find({ username: req.query.username, password: req.query.password }).toArray();
@@ -30,35 +27,25 @@ userApis.get("/get-users-list", async (req, res) => {
 
 userApis.get("/get-user/:id", async (req, res) => {
     // we want to get the list from the database
-    const client = new MongoClient(DbConnectionString)
-    const connection = await client.connect();
-    const db = connection.db("icc");
-
+    const db = await getDb();
     const [data] = await db.collection("users").find({ _id: new ObjectId(req.params.id) }).toArray();
     res.json(data);
 })
 
 userApis.patch("/update-user/:id", async (req, res) => {
     // we want to get the list from the database
-    const client = new MongoClient(DbConnectionString)
-    const connection = await client.connect();
-    const db = connection.db("icc");
-
+    const db = await getDb();
     const matcher = { _id: new ObjectId(req.params.id) };
     const updateQuery = {
         $set: req.body
     }
-
     const dbResponse = await db.collection("users").updateOne(matcher, updateQuery)
     res.json(dbResponse);
 })
 
 userApis.delete("/delete-user/:id", async (req, res) => {
     // we want to get the list from the database
-    const client = new MongoClient(DbConnectionString)
-    const connection = await client.connect();
-    const db = connection.db("icc");
-
+    const db = await getDb();
     const data = await db.collection("users").deleteMany({ _id: new ObjectId(req.params.id) });
     res.json(data);
 })
@@ -95,9 +82,7 @@ userApis.post("/signup-user",
         let errors = validationResult(req);
 
         if (errors.isEmpty()) {
-            const client = new MongoClient(DbConnectionString)
-            const connection = await client.connect();
-            const db = connection.db("icc");
+            const db = await getDb();
             // check if user already exists
             const data = await db.collection("users")
                 .find({
@@ -122,10 +107,7 @@ userApis.post("/signup-user",
 
 
 userApis.get('/generate-token', async (req, res) => {
-    const client = new MongoClient(DbConnectionString)
-    const connection = await client.connect();
-    const db = connection.db("icc");
-
+    const db = await getDb();
     const user = await db.collection("users")
         .findOne({ username: req.headers.myusername, password: req.headers.mypassword });
     //if user present in the db then read categories from db and send otherwise send error response
@@ -133,7 +115,7 @@ userApis.get('/generate-token', async (req, res) => {
         const token = jwt.sign({
             username: user.username
         },
-            SECRETE_KEY,
+            process.env.SECRETE_KEY,
             {
                 expiresIn: "2h"
             }

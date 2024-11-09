@@ -8,24 +8,10 @@ import { userApis } from './users/users-apis.js';
 import { commentApis } from './comments/comments-apis.js';
 import { productApis } from './products/products-apis.js';
 import { categoriesApis } from './categories/categories-apis.js';
-import jwt from 'jsonwebtoken'
-import { SECRETE_KEY } from './constant.js';
+import { config } from 'dotenv'
+import { AutherizeMiddleware } from './middleware/auth.js';
 
-const AutherizeMiddleware = async (req, res, next) => {
-    let token = req.headers.token;
-    if(!token){
-        res.status(401).json({message:"un-authorized"})
-        return;
-    }
-    try{
-        // if this token was created by this server
-        jwt.verify(token, SECRETE_KEY);
-        next();
-    }catch{
-        res.status(401).json({message:"un-authorized"})
-        return;
-    }
-}
+config();
 
 const app = express();
 app.use(express.json())// for incoming json request
@@ -39,4 +25,6 @@ app.use("/", AutherizeMiddleware, commentApis)
 app.use("/", AutherizeMiddleware, productApis)
 app.use("/", AutherizeMiddleware, categoriesApis)
 
-app.listen(3001)
+app.listen(3001, () => {
+    console.log("app started....")
+})
