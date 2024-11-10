@@ -63,9 +63,7 @@ productApis.post("/insert-product",
     , body("stock")
         .isNumeric().withMessage("should be number")
         .notEmpty().withMessage("Required")
-        .isInt({ min: 0 }).withMessage("can not be negetive")
-
-    ,
+        .isInt({ min: 0 }).withMessage("can not be negetive")    ,
     async (req, res) => {
 
         let errors = validationResult(req)
