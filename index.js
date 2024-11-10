@@ -10,10 +10,13 @@ import { productApis } from './products/products-apis.js';
 import { categoriesApis } from './categories/categories-apis.js';
 import { config } from 'dotenv'
 import { AutherizeMiddleware } from './middleware/auth.js';
-
+import cors from 'cors'
 config();
 
 const app = express();
+
+app.use(cors()) // allow access from anywhere
+
 app.use(express.json())// for incoming json request
 app.use("/", userApis);
 app.use("/", objRoutes)
