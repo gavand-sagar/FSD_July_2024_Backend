@@ -11,6 +11,7 @@ import { categoriesApis } from './categories/categories-apis.js';
 import { config } from 'dotenv'
 import { AutherizeMiddleware } from './middleware/auth.js';
 import cors from 'cors'
+import { notesApis } from './notes/notes-apis.js';
 config();
 
 const app = express();
@@ -27,6 +28,7 @@ app.use("/", AutherizeMiddleware, basicRoutes)
 app.use("/", AutherizeMiddleware, commentApis)
 app.use("/", AutherizeMiddleware, productApis)
 app.use("/", AutherizeMiddleware, categoriesApis)
+app.use("/", AutherizeMiddleware, notesApis)
 
 app.listen(3001, () => {
     console.log("app started....")

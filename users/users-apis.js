@@ -120,7 +120,9 @@ userApis.get('/generate-token', async (req, res) => {
     //if user present in the db then read categories from db and send otherwise send error response
     if (user && bcrypt.compareSync(req.headers.mypassword, user.password)) {
         const token = jwt.sign({
-            username: user.username
+            username: user.username,
+            userId: user._id,
+            email: user.email
         },
             process.env.SECRETE_KEY,
             {
