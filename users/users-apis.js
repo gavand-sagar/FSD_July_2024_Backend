@@ -1,6 +1,7 @@
 import { Router } from "express"
 import { body, validationResult } from "express-validator";
 import { ObjectId } from "mongodb";
+import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { getDb } from "../db/db-utils.js";
 export const userApis = Router();
@@ -17,7 +18,8 @@ userApis.get("/get-users-list", async (req, res) => {
         const data = await db.collection("users")
             .find({}, {
                 projection: {
-                    password: false,
+                    username: true,
+                    email: true
                 }
             }).toArray();
         res.json(data);
@@ -95,7 +97,12 @@ userApis.post("/signup-user",
             if (data.length > 0) { // username present
                 res.status(400).json({ message: "Username is already taken." })
             } else {
-                const dbResponse = await db.collection("users").insertOne(req.body)
+                const encryptedPassword = await bcrypt.hashSync(req.body.password);
+                const userObj = {
+                    ...req.body,
+                    password: encryptedPassword
+                }
+                const dbResponse = await db.collection("users").insertOne(userObj)
                 res.json({ message: "Created.", dbResponse })
             }
         } else {
@@ -109,9 +116,9 @@ userApis.post("/signup-user",
 userApis.get('/generate-token', async (req, res) => {
     const db = await getDb();
     const user = await db.collection("users")
-        .findOne({ username: req.headers.myusername, password: req.headers.mypassword });
+        .findOne({ username: req.headers.myusername });
     //if user present in the db then read categories from db and send otherwise send error response
-    if (user) {
+    if (user && bcrypt.compareSync(req.headers.mypassword, user.password)) {
         const token = jwt.sign({
             username: user.username
         },
